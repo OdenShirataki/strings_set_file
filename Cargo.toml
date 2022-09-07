@@ -5,7 +5,7 @@ edition = "2021"
 
 authors = ["Oden Shirataki <oden.srtk@gmail.com>"]
 
-description = "Indexed data file. It uses mmap and tri-avltree."
+description = "Store a string in a file. Use mmap, optimize fragments on delete, and reference identical strings."
 
 repository = "https://github.com/OdenShirataki/strings_set_file"
 

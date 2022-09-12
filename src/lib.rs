@@ -69,7 +69,7 @@ impl Fragment{
             ,record_count
         })
     }
-    pub fn add(&mut self,ystr:&WordAddress)->Result<u64,std::io::Error>{
+    pub fn insert(&mut self,ystr:&WordAddress)->Result<u64,std::io::Error>{
         self.record_count+=1;
         let size=
             (std::mem::size_of::<WordAddress>() as u64)*(1+self.record_count)
@@ -94,6 +94,7 @@ impl Fragment{
         }
     }
     pub fn search_blank(&self,len:u64)->Option<FragmentGetResult>{
+        //return  None;
         if self.record_count==0{
             None
         }else{
@@ -189,7 +190,7 @@ impl StringsSetFile{
     }
     pub fn remove(&mut self,ystr:&WordAddress){
         self.filemmap.write_0(ystr.offset as isize,ystr.len);
-        self.fragment.add(ystr).unwrap();
+        self.fragment.insert(ystr).unwrap();
     }
 }
 

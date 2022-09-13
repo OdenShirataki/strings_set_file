@@ -94,7 +94,6 @@ impl Fragment{
         }
     }
     pub fn search_blank(&self,len:u64)->Option<FragmentGetResult>{
-        //return  None;
         if self.record_count==0{
             None
         }else{

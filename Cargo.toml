@@ -1,6 +1,6 @@
 [package]
 name = "strings_set_file"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 authors = ["Oden Shirataki <oden.srtk@gmail.com>"]
@@ -10,7 +10,7 @@ description = "Store a string in a file. Use mmap, optimize fragments on delete,
 repository = "https://github.com/OdenShirataki/strings_set_file"
 
 keywords = ["string","file","memmap","database"]
-license = "MIT"
+license = "MIT/Apache-2.0"
 
 [dependencies]
 file_mmap={ path="../file_mmap" , version="0.1" }

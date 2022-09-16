@@ -153,7 +153,7 @@ impl StringsSetFile{
         })
     }
     pub fn to_str(&self,word:&WordAddress)->&str {
-        let offset=self.offset(word.offset() as isize) as *mut i8;
+        let offset=self.offset(word.offset() as isize) as *const i8;
         if let Ok(str)=unsafe{std::ffi::CStr::from_ptr(offset)}.to_str(){
             str
         }else{
@@ -167,7 +167,7 @@ impl StringsSetFile{
         let len=target.len() as u64;
         match self.fragment.search_blank(len){
             Some(r)=>{
-                self.filemmap.write(r.string_addr,(target.to_string()+"\0").as_bytes());
+                self.filemmap.write(r.string_addr,target.to_string().as_bytes());
                 self.fragment.release(r.fragment_id,len);
                 Some(Word{
                     address:WordAddress{offset:r.string_addr as i64,len}
@@ -175,7 +175,7 @@ impl StringsSetFile{
                 })
             }
             ,None=>{
-                if let Some(addr)=self.filemmap.append((target.to_string()+"\0").as_bytes()){
+                if let Some(addr)=self.filemmap.append(target.to_string().as_bytes()){
                     Some(Word{
                         address:WordAddress{offset:addr as i64,len}
                         ,set:self

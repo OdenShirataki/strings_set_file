@@ -1,6 +1,6 @@
 [package]
 name = "strings_set_file"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 
 authors = ["Oden Shirataki <oden.srtk@gmail.com>"]
@@ -13,4 +13,4 @@ keywords = ["string","file","memmap","database"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-file_mmap={ path="../file_mmap" , version="0.1" }
+file_mmap={ path="../file_mmap" , version="0.2" }

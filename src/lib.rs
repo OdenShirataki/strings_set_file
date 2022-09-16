@@ -1,6 +1,5 @@
 use file_mmap::FileMmap;
 
-#[repr(C)]
 pub struct WordAddress{
     offset:i64
     ,len:u64
@@ -99,8 +98,8 @@ impl Fragment{
         }else{
             for i in -(self.record_count as i64)..0{
                 let index=(-i) as u64;
-                let s=unsafe{
-                    &mut *self.list.offset(index as isize)
+                let s=&mut unsafe{
+                    *self.list.offset(index as isize)
                 };
                 if s.len>=len{
                     return Some(FragmentGetResult{

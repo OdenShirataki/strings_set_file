@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "file_mmap"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "memmap2",
 ]
@@ -25,8 +25,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "strings_set_file"
-version = "0.1.4"
+name = "various_data_file"
+version = "0.1.0"
 dependencies = [
  "file_mmap",
 ]

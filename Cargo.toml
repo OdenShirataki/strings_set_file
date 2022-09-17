@@ -1,15 +1,15 @@
 [package]
-name = "strings_set_file"
-version = "0.1.4"
+name = "various_data_file"
+version = "0.1.0"
 edition = "2021"
 
 authors = ["Oden Shirataki <oden.srtk@gmail.com>"]
 
-description = "Store a string in a file. Use mmap, optimize fragments on delete, and reference identical strings."
+description = "Store a dainary datas in a file. Use mmap, optimize fragments on delete, and reference identical strings."
 
-repository = "https://github.com/OdenShirataki/strings_set_file"
+repository = "https://github.com/OdenShirataki/various_data_file"
 
-keywords = ["string","file","memmap","database"]
+keywords = ["file","memmap","database","binary","string"]
 license = "MIT/Apache-2.0"
 
 [dependencies]

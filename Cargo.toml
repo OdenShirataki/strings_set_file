@@ -13,4 +13,4 @@ keywords = ["file","memmap","database","binary","string"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-file_mmap={ path="../file_mmap" , version="0.2" }
+file_mmap={ path="../file_mmap" , version="0.3" }

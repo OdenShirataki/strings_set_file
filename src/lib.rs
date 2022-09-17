@@ -9,6 +9,9 @@ impl DataAddress{
     pub fn offset(&self)->i64{
         self.offset
     }
+    pub fn len(&self)->u64{
+        self.len
+    }
 }
 pub struct Data<'a>{
     address:DataAddress

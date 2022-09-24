@@ -121,14 +121,14 @@ impl Fragment{
         }
         Ok(self.record_count)
     }
-    pub fn release(&mut self,id:u64,len:u64){
+    pub fn release(&mut self,row:u64,len:u64){
         let mut s=unsafe{
-            &mut *self.list.offset(id as isize)
+            &mut *self.list.offset(row as isize)
         };
         s.offset+=len as i64;
         s.len-=len;
 
-        if s.len==0 && id==self.record_count{
+        if s.len==0 && row==self.record_count{
             self.record_count-=1;
         }
     }

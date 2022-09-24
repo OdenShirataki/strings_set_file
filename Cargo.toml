@@ -1,6 +1,6 @@
 [package]
 name = "various_data_file"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 
 authors = ["Oden Shirataki <oden.srtk@gmail.com>"]
@@ -13,4 +13,4 @@ keywords = ["file","memmap","database","binary","string"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-file_mmap={ path="../file_mmap" , version="0.3" }
+file_mmap={ path="../file_mmap" , version="0.4" }

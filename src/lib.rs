@@ -80,7 +80,7 @@ struct FragmentGetResult{
 }
 struct Fragment{
     filemmap:FileMmap
-    ,list: *mut DataAddress
+    ,list: Vec<DataAddress>
     ,record_count:u64
 }
 impl Fragment{
@@ -104,7 +104,7 @@ impl Fragment{
         }
         Ok(Fragment{
             filemmap
-            ,list
+            ,list:unsafe{Vec::from_raw_parts(list,1,0)}
             ,record_count
         })
     }
@@ -117,13 +117,13 @@ impl Fragment{
             self.filemmap.set_len(size as u64)?;
         }
         unsafe{
-            *self.list.offset(self.record_count as isize)=*ystr;
+            *(self.list.as_ptr() as *mut DataAddress).offset(self.record_count as isize)=*ystr;
         }
         Ok(self.record_count)
     }
     pub fn release(&mut self,row:u64,len:u64){
-        let mut s=unsafe{
-            &mut *self.list.offset(row as isize)
+        let mut s=&mut unsafe{
+            *(self.list.as_ptr() as *mut DataAddress).offset(row as isize)
         };
         s.offset+=len as i64;
         s.len-=len;
@@ -139,7 +139,7 @@ impl Fragment{
             for i in -(self.record_count as i64)..0{
                 let index=(-i) as u64;
                 let s=&mut unsafe{
-                    *self.list.offset(index as isize)
+                    *(self.list.as_ptr() as *mut DataAddress).offset(index as isize)
                 };
                 if s.len>=len{
                     return Some(FragmentGetResult{

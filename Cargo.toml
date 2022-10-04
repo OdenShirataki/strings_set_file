@@ -10,6 +10,7 @@ description = "Store a dainary datas in a file. Use mmap, optimize fragments on 
 repository = "https://github.com/OdenShirataki/various_data_file"
 
 keywords = ["file","memmap","database","binary","string"]
+categories = ["caching","database"]
 license = "MIT/Apache-2.0"
 
 [dependencies]

@@ -5,6 +5,8 @@ version = 3
 [[package]]
 name = "file_mmap"
 version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a683f29e376fab50e1679e96416fda2281b70d1851eed663d2c0b78b2967d1f"
 dependencies = [
  "memmap2",
 ]
@@ -26,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "various_data_file"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "file_mmap",
 ]

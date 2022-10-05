@@ -83,16 +83,17 @@ struct Fragment{
     ,list: Vec<DataAddress>
     ,record_count:u64
 }
+const DATAADDRESS_SIZE:usize=std::mem::size_of::<DataAddress>();
 impl Fragment{
     pub fn new(path:&str) -> Result<Fragment,std::io::Error>{
-        let init_size=std::mem::size_of::<DataAddress>() as u64;
+        let init_size=DATAADDRESS_SIZE as u64;
         let filemmap=FileMmap::new(path,init_size)?;
         let list=filemmap.as_ptr() as *mut DataAddress;
-        let len=filemmap.len() as u64;
+        let len=filemmap.len();
         let mut record_count=if len==init_size{
             0
         }else{
-            (len-init_size)/std::mem::size_of::<DataAddress>() as u64 - 1
+            (len-init_size)/DATAADDRESS_SIZE as u64 - 1
         };
         if record_count>0{
             for i in -(record_count as i64)..0{
@@ -111,7 +112,7 @@ impl Fragment{
     pub fn insert(&mut self,ystr:&DataAddress)->Result<u64,std::io::Error>{
         self.record_count+=1;
         let size=
-            (std::mem::size_of::<DataAddress>() as u64)*(1+self.record_count)
+            (DATAADDRESS_SIZE as u64)*(1+self.record_count)
         ;
         if self.filemmap.len()<size{
             self.filemmap.set_len(size as u64)?;

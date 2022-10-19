@@ -15,11 +15,11 @@ impl DataAddress{
 }
 pub struct Data<'a>{
     address:DataAddress
-    ,set:&'a VariousDataFile
+    ,data:&'a VariousDataFile
 }
 impl Data<'_>{
-    pub fn slice(&self)->&[u8]{
-        self.set.slice(&self.address)
+    pub fn bytes(&self)->&[u8]{
+        self.data.bytes(&self.address)
     }
     pub fn address(&self)->DataAddress{
         self.address
@@ -39,8 +39,8 @@ impl VariousDataFile{
             ,fragment
         })
     }
-    pub fn slice(&self,word:&DataAddress)->&[u8] {
-        self.filemmap.slice(word.offset() as isize,word.len as usize)
+    pub fn bytes(&self,word:&DataAddress)->&[u8] {
+        self.filemmap.bytes(word.offset() as isize,word.len as usize)
     }
     pub fn offset(&self,addr:isize)->*const i8{
         self.filemmap.offset(addr)
@@ -53,17 +53,18 @@ impl VariousDataFile{
                 self.fragment.release(r.fragment_id,len);
                 Some(Data{
                     address:DataAddress{offset:r.string_addr as i64,len}
-                    ,set:self
+                    ,data:self
                 })
             }
             ,None=>{
-                if let Some(addr)=self.filemmap.append(target){
-                    Some(Data{
-                        address:DataAddress{offset:addr as i64,len}
-                        ,set:self
-                    })
-                }else{
-                    None
+                match self.filemmap.append(target){
+                    Some(addr)=>{
+                        Some(Data{
+                            address:DataAddress{offset:addr as i64,len}
+                            ,data:self
+                        })
+                    }
+                    ,None=>None
                 }
             }
         }
@@ -154,18 +155,17 @@ impl Fragment{
     }
 }
 
-
 #[test]
 fn test(){
     if let Ok(mut s)=VariousDataFile::new("D:\\test.str"){
         if let Some(w)=s.insert(b"TEST"){
-            assert_eq!("TEST".to_string(),std::str::from_utf8(w.slice()).unwrap().to_string());
+            assert_eq!("TEST".to_string(),std::str::from_utf8(w.bytes()).unwrap().to_string());
         }
         if let Some(w)=s.insert(b"HOGE"){
-            assert_eq!("HOGE".to_string(),std::str::from_utf8(w.slice()).unwrap().to_string());
+            assert_eq!("HOGE".to_string(),std::str::from_utf8(w.bytes()).unwrap().to_string());
         }
         if let Some(w)=s.insert(b"TEST"){
-            assert_eq!("TEST".to_string(),std::str::from_utf8(w.slice()).unwrap().to_string());
+            assert_eq!("TEST".to_string(),std::str::from_utf8(w.bytes()).unwrap().to_string());
         }
     }
 }

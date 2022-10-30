@@ -31,7 +31,7 @@ pub struct VariousDataFile{
     ,fragment:Fragment
 }
 impl VariousDataFile{
-    pub fn new(path:&str) -> Result<VariousDataFile,std::io::Error>{
+    pub fn new(path:&str) -> Result<Self,std::io::Error>{
         let filemmap=FileMmap::new(path,1)?;
         let fragment=Fragment::new(&(path.to_string()+".f"))?;
         Ok(VariousDataFile{
@@ -45,27 +45,23 @@ impl VariousDataFile{
     pub fn offset(&self,addr:isize)->*const i8{
         self.filemmap.offset(addr)
     }
-    pub fn insert(&mut self,target:&[u8])->Option<Data>{
+    pub fn insert(&mut self,target:&[u8])->Result<Data,std::io::Error>{
         let len=target.len() as u64;
         match self.fragment.search_blank(len){
             Some(r)=>{
                 self.filemmap.write(r.string_addr,target);
                 self.fragment.release(r.fragment_id,len);
-                Some(Data{
+                Ok(Data{
                     address:DataAddress{offset:r.string_addr as i64,len}
                     ,data:self
                 })
             }
             ,None=>{
-                match self.filemmap.append(target){
-                    Some(addr)=>{
-                        Some(Data{
-                            address:DataAddress{offset:addr as i64,len}
-                            ,data:self
-                        })
-                    }
-                    ,None=>None
-                }
+                let addr=self.filemmap.append(target)?;
+                Ok(Data{
+                    address:DataAddress{offset:addr as i64,len}
+                    ,data:self
+                })
             }
         }
     }
@@ -86,7 +82,7 @@ struct Fragment{
 }
 const DATAADDRESS_SIZE:usize=std::mem::size_of::<DataAddress>();
 impl Fragment{
-    pub fn new(path:&str) -> Result<Fragment,std::io::Error>{
+    pub fn new(path:&str)->Result<Self,std::io::Error>{
         let init_size=DATAADDRESS_SIZE as u64;
         let filemmap=FileMmap::new(path,init_size)?;
         let list=filemmap.as_ptr() as *mut DataAddress;
@@ -158,13 +154,13 @@ impl Fragment{
 #[test]
 fn test(){
     if let Ok(mut s)=VariousDataFile::new("D:\\test.str"){
-        if let Some(w)=s.insert(b"TEST"){
+        if let Ok(w)=s.insert(b"TEST"){
             assert_eq!("TEST".to_string(),std::str::from_utf8(w.bytes()).unwrap().to_string());
         }
-        if let Some(w)=s.insert(b"HOGE"){
+        if let Ok(w)=s.insert(b"HOGE"){
             assert_eq!("HOGE".to_string(),std::str::from_utf8(w.bytes()).unwrap().to_string());
         }
-        if let Some(w)=s.insert(b"TEST"){
+        if let Ok(w)=s.insert(b"TEST"){
             assert_eq!("TEST".to_string(),std::str::from_utf8(w.bytes()).unwrap().to_string());
         }
     }

@@ -7,16 +7,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in library 'strings_set_file'",
+            "name": "Debug unit tests in library 'various_data_file'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
                     "--lib",
-                    "--package=strings_set_file"
+                    "--package=various_data_file"
                 ],
                 "filter": {
-                    "name": "strings_set_file",
+                    "name": "various_data_file",
                     "kind": "lib"
                 }
             },

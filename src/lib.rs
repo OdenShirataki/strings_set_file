@@ -21,7 +21,9 @@ pub struct Data<'a>{
 }
 impl Data<'_>{
     pub fn bytes(&self)->&[u8]{
-        self.data.bytes(&self.address)
+        unsafe{
+            self.data.bytes(&self.address)
+        }
     }
     pub fn address(&self)->DataAddress{
         self.address
@@ -41,18 +43,20 @@ impl VariousDataFile{
             ,fragment
         })
     }
-    pub fn bytes(&self,word:&DataAddress)->&[u8] {
+    pub unsafe fn bytes(&self,word:&DataAddress)->&[u8] {
         self.filemmap.bytes(word.offset() as isize,word.len as usize)
     }
-    pub fn offset(&self,addr:isize)->*const i8{
+    pub unsafe fn offset(&self,addr:isize)->*const i8{
         self.filemmap.offset(addr)
     }
     pub fn insert(&mut self,target:&[u8])->Result<Data,std::io::Error>{
         let len=target.len() as u64;
         match self.fragment.search_blank(len){
             Some(r)=>{
-                self.filemmap.write(r.string_addr,target);
-                self.fragment.release(r.fragment_id,len);
+                unsafe{
+                    self.filemmap.write(r.string_addr,target);
+                    self.fragment.release(r.fragment_id,len);
+                }
                 Ok(Data{
                     address:DataAddress{offset:r.string_addr as i64,len}
                     ,data:self
@@ -67,7 +71,7 @@ impl VariousDataFile{
             }
         }
     }
-    pub fn remove(&mut self,ystr:&DataAddress){
+    pub unsafe fn remove(&mut self,ystr:&DataAddress){
         self.filemmap.write_0(ystr.offset as isize,ystr.len);
         self.fragment.insert(ystr).unwrap();
     }
@@ -87,15 +91,15 @@ fn test(){
         let liam=s.insert(b"Liam").unwrap().address;
         let olivia=s.insert(b"Olivia").unwrap().address;
         
-        s.remove(&noah);
+        unsafe{s.remove(&noah);}
         if let Ok(w)=s.insert(b"Renamed Noah"){
             assert_eq!("Renamed Noah".to_string(),std::str::from_utf8(w.bytes()).unwrap().to_string());
         }
-        s.remove(&liam);
+        unsafe{s.remove(&liam)};
         if let Ok(w)=s.insert(b"Renamed Liam"){
             assert_eq!("Renamed Liam".to_string(),std::str::from_utf8(w.bytes()).unwrap().to_string());
         }
-        s.remove(&olivia);
+        unsafe{s.remove(&olivia)};
         if let Ok(w)=s.insert(b"Renamed Olivia"){
             assert_eq!("Renamed Olivia".to_string(),std::str::from_utf8(w.bytes()).unwrap().to_string());
         }

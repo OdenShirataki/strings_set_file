@@ -19,7 +19,9 @@ const INIT_SIZE:usize=COUNTER_SIZE+DATAADDRESS_SIZE;
 impl Fragment{
     pub fn new(path:&str)->Result<Self,std::io::Error>{
         let filemmap=FileMmap::new(path,INIT_SIZE as u64)?;
-        let list=filemmap.offset(COUNTER_SIZE as isize) as *mut DataAddress;
+        let list=unsafe{
+            filemmap.offset(COUNTER_SIZE as isize)
+         } as *mut DataAddress;
         let counter=filemmap.as_ptr() as *mut u64;
         Ok(Fragment{
             filemmap
@@ -40,10 +42,8 @@ impl Fragment{
         }
         Ok(**self.record_count)
     }
-    pub fn release(&mut self,row:u64,len:u64){
-        let mut s=unsafe{
-            &mut *(&mut**self.list as *mut DataAddress).offset(row as isize)
-        };
+    pub unsafe fn release(&mut self,row:u64,len:u64){
+        let mut s=&mut *(&mut**self.list as *mut DataAddress).offset(row as isize);
         s.offset+=len as i64;
         s.len-=len;
 

@@ -38,7 +38,7 @@ impl Fragment{
             self.filemmap.set_len(size as u64)?;
         }
         unsafe{
-            *(&mut**self.list as *mut DataAddress).offset(**self.record_count as isize)=*ystr;
+            *(&mut**self.list as *mut DataAddress).offset(**self.record_count as isize)=ystr.clone();
         }
         Ok(**self.record_count)
     }

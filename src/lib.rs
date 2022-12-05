@@ -2,7 +2,7 @@ use file_mmap::FileMmap;
 
 mod flagment;
 
-#[derive(Clone,Copy,Default,Debug)]
+#[derive(Clone,Default)]
 pub struct DataAddress{
     offset:i64
     ,len:u64
@@ -25,8 +25,8 @@ impl Data<'_>{
             self.data.bytes(&self.address)
         }
     }
-    pub fn address(&self)->DataAddress{
-        self.address
+    pub fn address(&self)->&DataAddress{
+        &self.address
     }
 }
 

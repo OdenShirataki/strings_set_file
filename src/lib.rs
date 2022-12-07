@@ -2,7 +2,7 @@ use file_mmap::FileMmap;
 
 mod flagment;
 
-#[derive(Clone,Default)]
+#[derive(Clone,Default,PartialEq)]
 pub struct DataAddress{
     offset:i64
     ,len:u64

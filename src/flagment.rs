@@ -1,6 +1,5 @@
-use std::mem::ManuallyDrop;
-
 use file_mmap::FileMmap;
+use std::mem::ManuallyDrop;
 
 use crate::DataAddress;
 

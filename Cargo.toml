@@ -1,6 +1,6 @@
 [package]
 name = "various_data_file"
-version = "0.8.1"
+version = "0.8.2"
 edition = "2021"
 
 authors = ["Oden Shirataki <oden.srtk@gmail.com>"]
@@ -14,4 +14,4 @@ categories = ["caching","algorithms"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-file_mmap={version="0.8",path="../file_mmap"}
+file_mmap={version="0.9",path="../file_mmap"}

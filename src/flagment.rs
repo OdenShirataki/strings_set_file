@@ -15,14 +15,14 @@ pub(super) struct Fragment {
     list: ManuallyDrop<Box<DataAddress>>,
     record_count: ManuallyDrop<Box<u64>>,
 }
-const DATAADDRESS_SIZE: usize = size_of::<DataAddress>();
-const COUNTER_SIZE: usize = size_of::<u64>();
-const INIT_SIZE: usize = COUNTER_SIZE + DATAADDRESS_SIZE;
+const DATAADDRESS_SIZE: u64 = size_of::<DataAddress>() as u64;
+const COUNTER_SIZE: u64 = size_of::<u64>() as u64;
+const INIT_SIZE: u64 = COUNTER_SIZE + DATAADDRESS_SIZE;
 impl Fragment {
     pub fn new(path: &str) -> io::Result<Self> {
         let mut filemmap = FileMmap::new(path)?;
         if filemmap.len()? == 0 {
-            filemmap.set_len(INIT_SIZE as u64)?;
+            filemmap.set_len(INIT_SIZE)?;
         }
         let list = unsafe { filemmap.offset(COUNTER_SIZE as isize) } as *mut DataAddress;
         let counter = filemmap.as_ptr() as *mut u64;
@@ -34,9 +34,9 @@ impl Fragment {
     }
     pub fn insert(&mut self, ystr: &DataAddress) -> io::Result<u64> {
         **self.record_count += 1;
-        let size = INIT_SIZE + DATAADDRESS_SIZE * **self.record_count as usize;
-        if self.filemmap.len()? < size as u64 {
-            self.filemmap.set_len(size as u64)?;
+        let size = INIT_SIZE + DATAADDRESS_SIZE * **self.record_count;
+        if self.filemmap.len()? < size {
+            self.filemmap.set_len(size)?;
         }
         unsafe {
             *(&mut **self.list as *mut DataAddress).offset(**self.record_count as isize) =

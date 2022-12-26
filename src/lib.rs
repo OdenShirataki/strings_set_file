@@ -1,4 +1,5 @@
 use file_mmap::FileMmap;
+use std::io;
 
 mod flagment;
 
@@ -33,8 +34,11 @@ pub struct VariousDataFile {
     fragment: flagment::Fragment,
 }
 impl VariousDataFile {
-    pub fn new(path: &str) -> Result<Self, std::io::Error> {
-        let filemmap = FileMmap::new(path, 1)?;
+    pub fn new(path: &str) -> io::Result<Self> {
+        let mut filemmap = FileMmap::new(path)?;
+        if filemmap.len()? == 0 {
+            filemmap.set_len(1)?;
+        }
         let fragment = flagment::Fragment::new(&(path.to_string() + ".f"))?;
         Ok(VariousDataFile { filemmap, fragment })
     }
@@ -45,18 +49,18 @@ impl VariousDataFile {
     pub unsafe fn offset(&self, addr: isize) -> *const u8 {
         self.filemmap.offset(addr)
     }
-    pub fn insert(&mut self, target: &[u8]) -> Result<Data, std::io::Error> {
-        let len = target.len() as u64;
+    pub fn insert(&mut self, target: &[u8]) -> io::Result<Data> {
+        let len = target.len();
         match self.fragment.search_blank(len) {
             Some(r) => {
                 unsafe {
-                    self.filemmap.write(r.string_addr, target);
+                    self.filemmap.write(r.string_addr as isize, target);
                     self.fragment.release(r.fragment_id, len);
                 }
                 Ok(Data {
                     address: DataAddress {
                         offset: r.string_addr as i64,
-                        len,
+                        len: len as u64,
                     },
                     data: self,
                 })
@@ -66,7 +70,7 @@ impl VariousDataFile {
                 Ok(Data {
                     address: DataAddress {
                         offset: addr as i64,
-                        len,
+                        len: len as u64,
                     },
                     data: self,
                 })
@@ -74,7 +78,8 @@ impl VariousDataFile {
         }
     }
     pub unsafe fn remove(&mut self, ystr: &DataAddress) {
-        self.filemmap.write_0(ystr.offset as isize, ystr.len);
+        self.filemmap
+            .write_0(ystr.offset as isize, ystr.len as usize);
         self.fragment.insert(ystr).unwrap();
     }
 }

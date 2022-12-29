@@ -1,8 +1,5 @@
 use file_mmap::FileMmap;
-use std::{
-    io,
-    path::{Path, PathBuf},
-};
+use std::{io, path::Path};
 
 mod flagment;
 
@@ -49,7 +46,7 @@ impl VariousDataFile {
         } else {
             ".f".to_owned()
         };
-        let mut path: PathBuf = path.into();
+        let mut path = path.to_path_buf();
         path.set_file_name(&flagment_file_name);
         Ok(VariousDataFile {
             filemmap,

@@ -1,5 +1,8 @@
 use file_mmap::FileMmap;
-use std::io;
+use std::{
+    io,
+    path::{Path, PathBuf},
+};
 
 mod flagment;
 
@@ -34,13 +37,24 @@ pub struct VariousDataFile {
     fragment: flagment::Fragment,
 }
 impl VariousDataFile {
-    pub fn new(path: &str) -> io::Result<Self> {
-        let mut filemmap = FileMmap::new(path)?;
+    pub fn new<P: AsRef<Path>>(path: P) -> io::Result<Self> {
+        let mut filemmap = FileMmap::new(&path)?;
         if filemmap.len()? == 0 {
             filemmap.set_len(1)?;
         }
-        let fragment = flagment::Fragment::new(&(path.to_string() + ".f"))?;
-        Ok(VariousDataFile { filemmap, fragment })
+
+        let path = path.as_ref();
+        let flagment_file_name = if let Some(file_name) = path.file_name() {
+            file_name.to_string_lossy().into_owned() + ".f"
+        } else {
+            ".f".to_owned()
+        };
+        let mut path: PathBuf = path.into();
+        path.set_file_name(&flagment_file_name);
+        Ok(VariousDataFile {
+            filemmap,
+            fragment: flagment::Fragment::new(path)?,
+        })
     }
     pub unsafe fn bytes(&self, word: &DataAddress) -> &[u8] {
         self.filemmap

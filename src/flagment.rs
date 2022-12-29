@@ -2,6 +2,7 @@ use file_mmap::FileMmap;
 use std::{
     io,
     mem::{size_of, ManuallyDrop},
+    path::Path,
 };
 
 use crate::DataAddress;
@@ -19,7 +20,7 @@ const DATAADDRESS_SIZE: u64 = size_of::<DataAddress>() as u64;
 const COUNTER_SIZE: u64 = size_of::<u64>() as u64;
 const INIT_SIZE: u64 = COUNTER_SIZE + DATAADDRESS_SIZE;
 impl Fragment {
-    pub fn new(path: &str) -> io::Result<Self> {
+    pub fn new<P: AsRef<Path>>(path: P) -> io::Result<Self> {
         let mut filemmap = FileMmap::new(path)?;
         if filemmap.len()? == 0 {
             filemmap.set_len(INIT_SIZE)?;

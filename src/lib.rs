@@ -68,8 +68,8 @@ impl VariousDataFile {
         let len = target.len();
         match self.fragment.search_blank(len) {
             Some(r) => {
+                self.filemmap.write(r.string_addr as isize, target)?;
                 unsafe {
-                    self.filemmap.write(r.string_addr as isize, target);
                     self.fragment.release(r.fragment_id, len);
                 }
                 Ok(Data {
@@ -92,10 +92,11 @@ impl VariousDataFile {
             }
         }
     }
-    pub unsafe fn remove(&mut self, ystr: &DataAddress) {
+    pub fn remove(&mut self, ystr: &DataAddress) -> io::Result<()> {
         self.filemmap
-            .write_0(ystr.offset as isize, ystr.len as usize);
-        self.fragment.insert(ystr).unwrap();
+            .write_0(ystr.offset as isize, ystr.len as usize)?;
+        self.fragment.insert(ystr)?;
+        Ok(())
     }
 }
 
@@ -113,23 +114,22 @@ fn test() {
         let liam = s.insert(b"Liam").unwrap().address;
         let olivia = s.insert(b"Olivia").unwrap().address;
 
-        unsafe {
-            s.remove(&noah);
-        }
+        s.remove(&noah).unwrap();
+
         if let Ok(w) = s.insert(b"Renamed Noah") {
             assert_eq!(
                 "Renamed Noah".to_string(),
                 std::str::from_utf8(w.bytes()).unwrap().to_string()
             );
         }
-        unsafe { s.remove(&liam) };
+        s.remove(&liam).unwrap();
         if let Ok(w) = s.insert(b"Renamed Liam") {
             assert_eq!(
                 "Renamed Liam".to_string(),
                 std::str::from_utf8(w.bytes()).unwrap().to_string()
             );
         }
-        unsafe { s.remove(&olivia) };
+        s.remove(&olivia).unwrap();
         if let Ok(w) = s.insert(b"Renamed Olivia") {
             assert_eq!(
                 "Renamed Olivia".to_string(),

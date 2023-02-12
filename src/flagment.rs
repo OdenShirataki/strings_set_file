@@ -38,6 +38,10 @@ impl Fragment {
         let size = INIT_SIZE + DATAADDRESS_SIZE * **self.record_count;
         if self.filemmap.len()? < size {
             self.filemmap.set_len(size)?;
+            let list = unsafe { self.filemmap.offset(COUNTER_SIZE as isize) } as *mut DataAddress;
+            let counter = self.filemmap.as_ptr() as *mut u64;
+            self.list = ManuallyDrop::new(unsafe { Box::from_raw(list) });
+            self.record_count = ManuallyDrop::new(unsafe { Box::from_raw(counter) });
         }
         unsafe {
             *(&mut **self.list as *mut DataAddress).offset(**self.record_count as isize) =

@@ -1,9 +1,5 @@
 use file_mmap::FileMmap;
-use std::{
-    io,
-    mem::{size_of, ManuallyDrop},
-    path::Path,
-};
+use std::{io, mem::size_of, path::Path};
 
 use crate::DataAddress;
 
@@ -13,8 +9,6 @@ pub(super) struct FragmentGetResult {
 }
 pub(super) struct Fragment {
     filemmap: FileMmap,
-    list: ManuallyDrop<Box<DataAddress>>,
-    record_count: ManuallyDrop<Box<u64>>,
 }
 const DATAADDRESS_SIZE: u64 = size_of::<DataAddress>() as u64;
 const COUNTER_SIZE: u64 = size_of::<u64>() as u64;
@@ -25,46 +19,47 @@ impl Fragment {
         if filemmap.len()? == 0 {
             filemmap.set_len(INIT_SIZE)?;
         }
-        let list = unsafe { filemmap.offset(COUNTER_SIZE as isize) } as *mut DataAddress;
-        let counter = filemmap.as_ptr() as *mut u64;
-        Ok(Fragment {
-            filemmap,
-            list: ManuallyDrop::new(unsafe { Box::from_raw(list) }),
-            record_count: ManuallyDrop::new(unsafe { Box::from_raw(counter) }),
-        })
+        Ok(Self { filemmap })
+    }
+    unsafe fn list(&mut self) -> *mut DataAddress {
+        self.filemmap.offset(COUNTER_SIZE as isize) as *mut DataAddress
     }
     pub fn insert(&mut self, ystr: &DataAddress) -> io::Result<u64> {
-        **self.record_count += 1;
-        let size = INIT_SIZE + DATAADDRESS_SIZE * **self.record_count;
+        let record_count = unsafe {
+            let record_count = self.filemmap.as_ptr() as *mut u64;
+            *record_count += 1;
+            *record_count
+        };
+        let size = INIT_SIZE + DATAADDRESS_SIZE * record_count;
         if self.filemmap.len()? < size {
             self.filemmap.set_len(size)?;
-            let list = unsafe { self.filemmap.offset(COUNTER_SIZE as isize) } as *mut DataAddress;
-            let counter = self.filemmap.as_ptr() as *mut u64;
-            self.list = ManuallyDrop::new(unsafe { Box::from_raw(list) });
-            self.record_count = ManuallyDrop::new(unsafe { Box::from_raw(counter) });
         }
         unsafe {
-            *(&mut **self.list as *mut DataAddress).offset(**self.record_count as isize) =
-                ystr.clone();
+            *(&mut self.list()).offset(record_count as isize) = ystr.clone();
         }
-        Ok(**self.record_count)
+        Ok(record_count)
     }
     pub unsafe fn release(&mut self, row: u64, len: usize) {
-        let mut s = &mut *(&mut **self.list as *mut DataAddress).offset(row as isize);
+        let s = &mut *(&mut self.list()).offset(row as isize);
         s.offset += len as i64;
         s.len -= len as u64;
 
-        if s.len == 0 && row == **self.record_count {
-            **self.record_count -= 1;
+        let record_count = self.filemmap.as_ptr() as *mut u64;
+        if s.len == 0 && row == *record_count {
+            *record_count -= 1;
         }
     }
     pub fn search_blank(&self, len: usize) -> Option<FragmentGetResult> {
-        if **self.record_count == 0 {
+        let record_count = unsafe { *(self.filemmap.as_ptr() as *const u64) };
+        if record_count == 0 {
             None
         } else {
-            for i in -(**self.record_count as isize)..0 {
+            for i in -(record_count as isize)..0 {
                 let index = -i;
-                let s = unsafe { &*(&**self.list as *const DataAddress).offset(index) };
+                let s = unsafe {
+                    &*(self.filemmap.offset(COUNTER_SIZE as isize) as *const DataAddress)
+                        .offset(index)
+                };
                 if s.len as usize >= len {
                     return Some(FragmentGetResult {
                         fragment_id: index as u64,

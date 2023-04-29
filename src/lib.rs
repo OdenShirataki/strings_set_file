@@ -57,7 +57,7 @@ impl VariousDataFile {
             },
         })
     }
-    pub unsafe fn bytes(&self, word: &DataAddress) -> &[u8] {
+    pub unsafe fn bytes(&self, word: &DataAddress) -> &'static [u8] {
         self.filemmap
             .bytes(word.offset() as isize, word.len as usize)
     }

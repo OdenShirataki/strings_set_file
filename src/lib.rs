@@ -3,7 +3,7 @@ use std::{io, path::Path};
 
 mod flagment;
 
-#[derive(Clone, Default, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct DataAddress {
     offset: i64,
     len: u64,

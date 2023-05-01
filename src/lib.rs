@@ -61,9 +61,6 @@ impl VariousDataFile {
         self.filemmap
             .bytes(word.offset() as isize, word.len as usize)
     }
-    pub unsafe fn offset(&self, addr: isize) -> *const u8 {
-        self.filemmap.offset(addr)
-    }
     pub fn insert(&mut self, target: &[u8]) -> io::Result<Data> {
         let len = target.len();
         match self.fragment.search_blank(len) {

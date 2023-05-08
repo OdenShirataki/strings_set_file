@@ -89,7 +89,7 @@ impl VariousDataFile {
             }
         }
     }
-    pub fn remove(&mut self, ystr: &DataAddress) -> io::Result<()> {
+    pub fn delete(&mut self, ystr: &DataAddress) -> io::Result<()> {
         self.filemmap
             .write_0(ystr.offset as isize, ystr.len as usize)?;
         self.fragment.insert(ystr)?;
@@ -111,7 +111,7 @@ fn test() {
         let liam = s.insert(b"Liam").unwrap().address;
         let olivia = s.insert(b"Olivia").unwrap().address;
 
-        s.remove(&noah).unwrap();
+        s.delete(&noah).unwrap();
 
         if let Ok(w) = s.insert(b"Renamed Noah") {
             assert_eq!(
@@ -119,14 +119,14 @@ fn test() {
                 std::str::from_utf8(w.bytes()).unwrap().to_string()
             );
         }
-        s.remove(&liam).unwrap();
+        s.delete(&liam).unwrap();
         if let Ok(w) = s.insert(b"Renamed Liam") {
             assert_eq!(
                 "Renamed Liam".to_string(),
                 std::str::from_utf8(w.bytes()).unwrap().to_string()
             );
         }
-        s.remove(&olivia).unwrap();
+        s.delete(&olivia).unwrap();
         if let Ok(w) = s.insert(b"Renamed Olivia") {
             assert_eq!(
                 "Renamed Olivia".to_string(),

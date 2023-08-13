@@ -14,12 +14,12 @@ const DATAADDRESS_SIZE: u64 = size_of::<DataAddress>() as u64;
 const COUNTER_SIZE: u64 = size_of::<u64>() as u64;
 const INIT_SIZE: u64 = COUNTER_SIZE + DATAADDRESS_SIZE;
 impl Fragment {
-    pub fn new<P: AsRef<Path>>(path: P) -> io::Result<Self> {
-        let mut filemmap = FileMmap::new(path)?;
-        if filemmap.len()? == 0 {
-            filemmap.set_len(INIT_SIZE)?;
+    pub fn new<P: AsRef<Path>>(path: P) -> Self {
+        let mut filemmap = FileMmap::new(path).unwrap();
+        if filemmap.len() == 0 {
+            filemmap.set_len(INIT_SIZE).unwrap();
         }
-        Ok(Self { filemmap })
+        Self { filemmap }
     }
     unsafe fn list(&mut self) -> *mut DataAddress {
         self.filemmap.offset(COUNTER_SIZE as isize) as *mut DataAddress
@@ -31,7 +31,7 @@ impl Fragment {
             *record_count
         };
         let size = INIT_SIZE + DATAADDRESS_SIZE * record_count;
-        if self.filemmap.len()? < size {
+        if self.filemmap.len() < size {
             self.filemmap.set_len(size)?;
         }
         unsafe {

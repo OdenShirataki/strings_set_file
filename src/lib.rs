@@ -45,12 +45,10 @@ impl VariousDataFile {
             fragment: {
                 let mut path = path.to_path_buf();
                 path.set_file_name(
-                    &(if let Some(file_name) = path.file_name() {
-                        file_name.to_string_lossy()
-                    } else {
-                        "".into()
-                    }
-                    .into_owned()
+                    &(path
+                        .file_name()
+                        .map_or("".into(), |v| v.to_string_lossy())
+                        .into_owned()
                         + ".f"),
                 );
                 flagment::Fragment::new(path)

@@ -61,30 +61,21 @@ impl VariousDataFile {
     }
     pub fn insert(&mut self, target: &[u8]) -> Data {
         let len = target.len();
-        match self.fragment.search_blank(len) {
-            Some(r) => {
-                self.filemmap.write(r.string_addr as isize, target).unwrap();
-                unsafe {
-                    self.fragment.release(r.fragment_id, len);
-                }
-                Data {
-                    address: DataAddress {
-                        offset: r.string_addr as i64,
-                        len: len as u64,
-                    },
-                    data: self,
-                }
-            }
-            None => {
-                let addr = self.filemmap.append(target).unwrap();
-                Data {
-                    address: DataAddress {
-                        offset: addr as i64,
-                        len: len as u64,
-                    },
-                    data: self,
-                }
-            }
+        Data {
+            address: DataAddress {
+                offset: match self.fragment.search_blank(len) {
+                    Some(r) => {
+                        self.filemmap.write(r.string_addr as isize, target).unwrap();
+                        unsafe {
+                            self.fragment.release(r.fragment_id, len);
+                        }
+                        r.string_addr as i64
+                    }
+                    None => self.filemmap.append(target).unwrap() as i64,
+                },
+                len: len as u64,
+            },
+            data: self,
         }
     }
     pub fn delete(&mut self, ystr: &DataAddress) {

@@ -51,9 +51,7 @@ impl Fragment {
     }
     pub fn search_blank(&self, len: usize) -> Option<FragmentGetResult> {
         let record_count = unsafe { *(self.filemmap.as_ptr() as *const u64) };
-        if record_count == 0 {
-            None
-        } else {
+        if record_count != 0 {
             for i in -(record_count as isize)..0 {
                 let index = -i;
                 let s = unsafe {
@@ -67,7 +65,7 @@ impl Fragment {
                     });
                 }
             }
-            None
         }
+        None
     }
 }

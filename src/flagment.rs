@@ -21,12 +21,15 @@ impl Fragment {
         }
         Self { filemmap }
     }
-    unsafe fn list(&mut self) -> *mut DataAddress {
-        self.filemmap.offset(COUNTER_SIZE as isize) as *mut DataAddress
+    unsafe fn list(&self) -> *const DataAddress {
+        self.filemmap.as_ptr().offset(COUNTER_SIZE as isize) as *const DataAddress
     }
-    pub fn insert(&mut self, ystr: &DataAddress) -> io::Result<u64> {
+    unsafe fn list_mut(&mut self) -> *mut DataAddress {
+        self.filemmap.as_ptr().offset(COUNTER_SIZE as isize) as *mut DataAddress
+    }
+    pub fn insert(&mut self, addr: &DataAddress) -> io::Result<u64> {
+        let record_count = self.filemmap.as_ptr() as *mut u64;
         let record_count = unsafe {
-            let record_count = self.filemmap.as_ptr() as *mut u64;
             *record_count += 1;
             *record_count
         };
@@ -35,12 +38,12 @@ impl Fragment {
             self.filemmap.set_len(size)?;
         }
         unsafe {
-            *(&mut self.list()).offset(record_count as isize) = ystr.clone();
+            *self.list_mut().offset(record_count as isize) = addr.clone();
         }
         Ok(record_count)
     }
     pub unsafe fn release(&mut self, row: u64, len: usize) {
-        let s = &mut *(&mut self.list()).offset(row as isize);
+        let s = &mut *self.list_mut().offset(row as isize);
         s.offset += len as i64;
         s.len -= len as u64;
 
@@ -52,12 +55,8 @@ impl Fragment {
     pub fn search_blank(&self, len: usize) -> Option<FragmentGetResult> {
         let record_count = unsafe { *(self.filemmap.as_ptr() as *const u64) };
         if record_count != 0 {
-            for i in -(record_count as isize)..0 {
-                let index = -i;
-                let s = unsafe {
-                    &*(self.filemmap.offset(COUNTER_SIZE as isize) as *const DataAddress)
-                        .offset(index)
-                };
+            for index in (-(record_count as isize)..0).map(|i| -i) {
+                let s = unsafe { &*self.list().offset(index) };
                 if s.len as usize >= len {
                     return Some(FragmentGetResult {
                         fragment_id: index as u64,

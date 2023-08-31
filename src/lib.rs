@@ -78,11 +78,11 @@ impl VariousDataFile {
             data: self,
         }
     }
-    pub fn delete(&mut self, ystr: &DataAddress) {
+    pub fn delete(&mut self, addr: &DataAddress) {
         self.filemmap
-            .write_0(ystr.offset as isize, ystr.len as usize)
+            .write(addr.offset as isize, &vec![0; addr.len as usize])
             .unwrap();
-        self.fragment.insert(ystr).unwrap();
+        self.fragment.insert(addr).unwrap();
     }
 }
 

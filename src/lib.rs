@@ -9,9 +9,12 @@ pub struct DataAddress {
     len: u64,
 }
 impl DataAddress {
+    #[inline(always)]
     pub fn offset(&self) -> i64 {
         self.offset
     }
+
+    #[inline(always)]
     pub fn len(&self) -> u64 {
         self.len
     }
@@ -21,9 +24,12 @@ pub struct Data<'a> {
     data: &'a VariousDataFile,
 }
 impl Data<'_> {
+    #[inline(always)]
     pub fn bytes(&self) -> &[u8] {
         unsafe { self.data.bytes(&self.address) }
     }
+
+    #[inline(always)]
     pub fn address(&self) -> &DataAddress {
         &self.address
     }
@@ -55,10 +61,14 @@ impl VariousDataFile {
             },
         }
     }
+
+    #[inline(always)]
     pub unsafe fn bytes(&self, word: &DataAddress) -> &'static [u8] {
         self.filemmap
             .bytes(word.offset() as isize, word.len as usize)
     }
+
+    #[inline(always)]
     pub fn insert(&mut self, target: &[u8]) -> Data {
         let len = target.len();
         Data {
@@ -78,6 +88,8 @@ impl VariousDataFile {
             data: self,
         }
     }
+
+    #[inline(always)]
     pub fn delete(&mut self, addr: &DataAddress) {
         self.filemmap
             .write(addr.offset as isize, &vec![0; addr.len as usize])

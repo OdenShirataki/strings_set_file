@@ -21,12 +21,18 @@ impl Fragment {
         }
         Self { filemmap }
     }
+
+    #[inline(always)]
     unsafe fn list(&self) -> *const DataAddress {
         self.filemmap.as_ptr().offset(COUNTER_SIZE as isize) as *const DataAddress
     }
+
+    #[inline(always)]
     unsafe fn list_mut(&mut self) -> *mut DataAddress {
         self.filemmap.as_ptr().offset(COUNTER_SIZE as isize) as *mut DataAddress
     }
+
+    #[inline(always)]
     pub fn insert(&mut self, addr: &DataAddress) -> io::Result<u64> {
         let record_count = self.filemmap.as_ptr() as *mut u64;
         let record_count = unsafe {
@@ -42,6 +48,8 @@ impl Fragment {
         }
         Ok(record_count)
     }
+
+    #[inline(always)]
     pub unsafe fn release(&mut self, row: u64, len: usize) {
         let s = &mut *self.list_mut().offset(row as isize);
         s.offset += len as i64;
@@ -52,6 +60,7 @@ impl Fragment {
             *record_count -= 1;
         }
     }
+    #[inline(always)]
     pub fn search_blank(&self, len: usize) -> Option<FragmentGetResult> {
         let record_count = unsafe { *(self.filemmap.as_ptr() as *const u64) };
         if record_count != 0 {

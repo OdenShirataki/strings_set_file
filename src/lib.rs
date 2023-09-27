@@ -1,13 +1,16 @@
-use file_mmap::FileMmap;
 use std::path::Path;
 
-mod flagment;
+use file_mmap::FileMmap;
+
+mod fragment;
+use fragment::Fragment;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct DataAddress {
     offset: i64,
     len: u64,
 }
+
 impl DataAddress {
     #[inline(always)]
     pub fn offset(&self) -> i64 {
@@ -23,6 +26,7 @@ pub struct Data<'a> {
     address: DataAddress,
     data: &'a VariousDataFile,
 }
+
 impl Data<'_> {
     #[inline(always)]
     pub fn bytes(&self) -> &[u8] {
@@ -37,8 +41,9 @@ impl Data<'_> {
 
 pub struct VariousDataFile {
     filemmap: FileMmap,
-    fragment: flagment::Fragment,
+    fragment: Fragment,
 }
+
 impl VariousDataFile {
     pub fn new<P: AsRef<Path>>(path: P) -> Self {
         let path = path.as_ref();
@@ -57,7 +62,7 @@ impl VariousDataFile {
                         .into_owned()
                         + ".f"),
                 );
-                flagment::Fragment::new(path)
+                Fragment::new(path)
             },
         }
     }
@@ -75,11 +80,11 @@ impl VariousDataFile {
             address: DataAddress {
                 offset: match self.fragment.search_blank(len) {
                     Some(r) => {
-                        self.filemmap.write(r.string_addr as isize, target).unwrap();
+                        self.filemmap.write(r.addr as isize, target).unwrap();
                         unsafe {
                             self.fragment.release(r.fragment_id, len);
                         }
-                        r.string_addr as i64
+                        r.addr as i64
                     }
                     None => self.filemmap.append(target).unwrap() as i64,
                 },
@@ -94,7 +99,7 @@ impl VariousDataFile {
         self.filemmap
             .write(addr.offset as isize, &vec![0; addr.len as usize])
             .unwrap();
-        self.fragment.insert(addr).unwrap();
+        self.fragment.insert(addr);
     }
 }
 

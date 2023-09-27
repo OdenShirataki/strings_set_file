@@ -1,18 +1,22 @@
+use std::{mem::size_of, num::NonZeroU64, path::Path};
+
 use file_mmap::FileMmap;
-use std::{io, mem::size_of, path::Path};
 
 use crate::DataAddress;
 
 pub(super) struct FragmentGetResult {
-    pub(super) fragment_id: u64,
-    pub(super) string_addr: u64,
+    pub(super) fragment_id: NonZeroU64,
+    pub(super) addr: u64,
 }
+
 pub(super) struct Fragment {
     filemmap: FileMmap,
 }
+
 const DATAADDRESS_SIZE: u64 = size_of::<DataAddress>() as u64;
 const COUNTER_SIZE: u64 = size_of::<u64>() as u64;
 const INIT_SIZE: u64 = COUNTER_SIZE + DATAADDRESS_SIZE;
+
 impl Fragment {
     pub fn new<P: AsRef<Path>>(path: P) -> Self {
         let mut filemmap = FileMmap::new(path).unwrap();
@@ -33,7 +37,7 @@ impl Fragment {
     }
 
     #[inline(always)]
-    pub fn insert(&mut self, addr: &DataAddress) -> io::Result<u64> {
+    pub(crate) fn insert(&mut self, addr: &DataAddress) {
         let record_count = self.filemmap.as_ptr() as *mut u64;
         let record_count = unsafe {
             *record_count += 1;
@@ -41,16 +45,16 @@ impl Fragment {
         };
         let size = INIT_SIZE + DATAADDRESS_SIZE * record_count;
         if self.filemmap.len() < size {
-            self.filemmap.set_len(size)?;
+            self.filemmap.set_len(size).unwrap();
         }
         unsafe {
             *self.list_mut().offset(record_count as isize) = addr.clone();
         }
-        Ok(record_count)
     }
 
     #[inline(always)]
-    pub unsafe fn release(&mut self, row: u64, len: usize) {
+    pub(crate) unsafe fn release(&mut self, row: NonZeroU64, len: usize) {
+        let row = row.get() as u64;
         let s = &mut *self.list_mut().offset(row as isize);
         s.offset += len as i64;
         s.len -= len as u64;
@@ -61,15 +65,15 @@ impl Fragment {
         }
     }
     #[inline(always)]
-    pub fn search_blank(&self, len: usize) -> Option<FragmentGetResult> {
+    pub(crate) fn search_blank(&self, len: usize) -> Option<FragmentGetResult> {
         let record_count = unsafe { *(self.filemmap.as_ptr() as *const u64) };
         if record_count != 0 {
             for index in (-(record_count as isize)..0).map(|i| -i) {
                 let s = unsafe { &*self.list().offset(index) };
                 if s.len as usize >= len {
                     return Some(FragmentGetResult {
-                        fragment_id: index as u64,
-                        string_addr: s.offset as u64,
+                        fragment_id: unsafe { NonZeroU64::new_unchecked(index as u64) },
+                        addr: s.offset as u64,
                     });
                 }
             }

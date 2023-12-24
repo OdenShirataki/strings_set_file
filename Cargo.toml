@@ -1,6 +1,6 @@
 [package]
 name = "various_data_file"
-version = "0.13.1"
+version = "0.13.3"
 edition = "2021"
 
 authors = ["Oden Shirataki <oden.srtk@gmail.com>"]
@@ -9,9 +9,9 @@ description = "Store a dainary datas in a file. Use mmap, optimize fragments on 
 
 repository = "https://github.com/OdenShirataki/various_data_file"
 
-keywords = ["file","memmap","database","binary","string"]
-categories = ["caching","algorithms"]
+keywords = ["file", "memmap", "database", "binary", "string"]
+categories = ["caching", "algorithms"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-file_mmap = "0.19"
+file_mmap = "0.19.5"

@@ -5,31 +5,24 @@ use file_mmap::FileMmap;
 mod fragment;
 use fragment::Fragment;
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct DataAddress {
     offset: i64,
     len: u64,
 }
 
-impl DataAddress {
-    pub fn offset(&self) -> i64 {
-        self.offset
-    }
-
-    pub fn len(&self) -> u64 {
-        self.len
-    }
-}
 pub struct Data<'a> {
     address: DataAddress,
     data: &'a VariousDataFile,
 }
 
 impl Data<'_> {
+    /// Get slice.
     pub fn bytes(&self) -> &[u8] {
-        unsafe { self.data.bytes(&self.address) }
+        self.data.bytes(&self.address)
     }
 
+    /// Get [DataAddress].
     pub fn address(&self) -> &DataAddress {
         &self.address
     }
@@ -41,6 +34,7 @@ pub struct VariousDataFile {
 }
 
 impl VariousDataFile {
+    /// Opens the file and creates the VariousDataFile.
     pub fn new<P: AsRef<Path>>(path: P) -> Self {
         let path = path.as_ref();
         let mut filemmap = FileMmap::new(path).unwrap();
@@ -63,11 +57,12 @@ impl VariousDataFile {
         }
     }
 
-    pub unsafe fn bytes(&self, word: &DataAddress) -> &'static [u8] {
-        self.filemmap
-            .bytes(word.offset() as isize, word.len as usize)
+    /// Get slice from [DataAddress].
+    pub fn bytes(&self, word: &DataAddress) -> &'static [u8] {
+        unsafe { self.filemmap.bytes(word.offset as isize, word.len as usize) }
     }
 
+    /// Inserts a byte string and returns [Data] containing the address..
     pub fn insert(&mut self, target: &[u8]) -> Data {
         let len = target.len();
         Data {
@@ -88,6 +83,7 @@ impl VariousDataFile {
         }
     }
 
+    /// Delete the data pointed to by DataAddress.
     pub fn delete(&mut self, addr: &DataAddress) {
         self.filemmap
             .write(addr.offset as isize, &vec![0; addr.len as usize])

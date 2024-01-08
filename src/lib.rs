@@ -5,7 +5,7 @@ use file_mmap::FileMmap;
 mod fragment;
 use fragment::Fragment;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Default)]
 pub struct DataAddress {
     offset: i64,
     len: u64,

@@ -34,7 +34,7 @@ impl Fragment {
         self.filemmap.as_ptr().offset(COUNTER_SIZE as isize) as *mut DataAddress
     }
 
-    pub(crate) fn insert(&mut self, addr: &DataAddress) {
+    pub(crate) fn insert(&mut self, addr: DataAddress) {
         let record_count = self.filemmap.as_ptr() as *mut u64;
         let record_count = unsafe {
             *record_count += 1;
@@ -45,7 +45,7 @@ impl Fragment {
             self.filemmap.set_len(size).unwrap();
         }
         unsafe {
-            *self.list_mut().offset(record_count as isize) = addr.clone();
+            *self.list_mut().offset(record_count as isize) = addr;
         }
     }
 

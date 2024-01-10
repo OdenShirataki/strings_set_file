@@ -84,7 +84,7 @@ impl VariousDataFile {
     }
 
     /// Delete the data pointed to by DataAddress.
-    pub fn delete(&mut self, addr: &DataAddress) {
+    pub fn delete(&mut self, addr: DataAddress) {
         self.filemmap
             .write(addr.offset as isize, &vec![0; addr.len as usize])
             .unwrap();
@@ -107,7 +107,7 @@ fn test() {
     let liam = s.insert(b"Liam").address;
     let olivia = s.insert(b"Olivia").address;
 
-    s.delete(&noah);
+    s.delete(noah);
 
     assert_eq!(
         "Renamed Noah".to_string(),
@@ -115,14 +115,14 @@ fn test() {
             .unwrap()
             .to_string()
     );
-    s.delete(&liam);
+    s.delete(liam);
     assert_eq!(
         "Renamed Liam".to_string(),
         std::str::from_utf8(s.insert(b"Renamed Liam").bytes())
             .unwrap()
             .to_string()
     );
-    s.delete(&olivia);
+    s.delete(olivia);
     assert_eq!(
         "Renamed Olivia".to_string(),
         std::str::from_utf8(s.insert(b"Renamed Olivia").bytes())

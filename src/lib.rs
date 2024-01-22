@@ -58,7 +58,7 @@ impl VariousDataFile {
     }
 
     /// Get slice from [DataAddress].
-    pub fn bytes(&self, word: &DataAddress) -> &'static [u8] {
+    pub fn bytes(&self, word: &DataAddress) -> &[u8] {
         unsafe { self.filemmap.bytes(word.offset as isize, word.len as usize) }
     }
 

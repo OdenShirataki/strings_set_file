@@ -22,9 +22,8 @@ impl Data<'_> {
         self.data.bytes(&self.address)
     }
 
-    /// Get [DataAddress].
-    pub fn address(&self) -> &DataAddress {
-        &self.address
+    pub fn into_address(self) -> DataAddress {
+        self.address
     }
 }
 
